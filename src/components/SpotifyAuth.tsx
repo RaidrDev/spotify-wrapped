@@ -21,7 +21,7 @@ const SpotifyAuth: React.FC<SpotifyAuthProps> = ({ onAuthSuccess }) => {
 
   const handleLogin = () => {
     setIsLoading(true);
-    const authUrl = `https://accounts.spotify.com/authorize?client_id=${CLIENT_ID}&response_type=code&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&scope=${encodeURIComponent(SCOPES.join(' '))}&show_dialog=true`;
+    const authUrl = `https://accounts.spotify.com/authorize?client_id=${CLIENT_ID}&response_type=code&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&scope=${encodeURIComponent(SCOPES.join(' '))}&show_dialog=true&force_web=true`;
     
     // Redirigir directamente
     window.location.href = authUrl;
@@ -113,6 +113,9 @@ const SpotifyAuth: React.FC<SpotifyAuthProps> = ({ onAuthSuccess }) => {
         <p className="text-gray-600 text-lg leading-relaxed mb-8">
           Descubre tu música favorita, artistas top y mucho más con tu Spotify Wrapped personalizado
         </p>
+        <div className="mb-6 p-4 bg-yellow-100 border border-yellow-400 text-yellow-700 rounded-lg">
+          <strong>⚠️ Nota importante:</strong> Esta app está en desarrollo. Si tienes problemas en móvil, prueba en el navegador web.
+        </div>
         {error && (
           <div className="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
             <strong>Error de autenticación:</strong> {error}
