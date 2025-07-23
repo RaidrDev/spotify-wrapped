@@ -62,6 +62,8 @@ const SpotifyAuth: React.FC<SpotifyAuthProps> = ({ onAuthSuccess }) => {
       const error = urlParams.get('error');
       const errorDescription = urlParams.get('error_description');
 
+      console.log('Auth callback - URL params:', { code: !!code, error, errorDescription });
+
       if (error) {
         console.error('Spotify Auth Error:', error, errorDescription);
         setError(`${error}: ${errorDescription}`);
@@ -72,18 +74,29 @@ const SpotifyAuth: React.FC<SpotifyAuthProps> = ({ onAuthSuccess }) => {
       if (code) {
         setIsLoading(true);
         try {
+          console.log('Exchanging code for token...');
           const accessToken = await exchangeCodeForToken(code);
+          console.log('Token exchange successful');
           window.history.replaceState({}, document.title, window.location.pathname);
           onAuthSuccess(accessToken);
         } catch (error) {
           console.error('Error during authentication:', error);
-          setError('Error al obtener el token de acceso');
+          setError('Error al obtener el token de acceso. Intenta de nuevo.');
           setIsLoading(false);
         }
       }
     };
 
-    handleAuthCallback();
+    // Verificar si estamos en un dispositivo móvil
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    
+    if (isMobile) {
+      console.log('Mobile device detected');
+      // En móviles, agregar un pequeño delay para asegurar que la URL se actualice
+      setTimeout(handleAuthCallback, 1000);
+    } else {
+      handleAuthCallback();
+    }
   }, [onAuthSuccess]);
 
   return (
@@ -103,12 +116,20 @@ const SpotifyAuth: React.FC<SpotifyAuthProps> = ({ onAuthSuccess }) => {
         {error && (
           <div className="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
             <strong>Error de autenticación:</strong> {error}
-            <button 
-              onClick={() => setError(null)}
-              className="ml-2 text-red-500 hover:text-red-700 underline"
-            >
-              Cerrar
-            </button>
+            <div className="mt-3 flex gap-2">
+              <button 
+                onClick={() => setError(null)}
+                className="text-red-500 hover:text-red-700 underline text-sm"
+              >
+                Cerrar
+              </button>
+              <button 
+                onClick={handleLogin}
+                className="text-red-600 hover:text-red-800 underline text-sm font-semibold"
+              >
+                Reintentar
+              </button>
+            </div>
           </div>
         )}
         <div className="flex justify-center">
@@ -118,7 +139,10 @@ const SpotifyAuth: React.FC<SpotifyAuthProps> = ({ onAuthSuccess }) => {
             disabled={isLoading}
           >
           {isLoading ? (
-            <span className="loading-spinner"></span>
+            <div className="flex items-center gap-2">
+              <span className="loading-spinner"></span>
+              <span>Conectando...</span>
+            </div>
           ) : (
             <>
               <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
@@ -128,6 +152,11 @@ const SpotifyAuth: React.FC<SpotifyAuthProps> = ({ onAuthSuccess }) => {
             </>
           )}
         </button>
+        </div>
+        <div className="mt-4 text-center">
+          <p className="text-sm text-gray-500">
+            📱 En móviles, se abrirá la app de Spotify. Vuelve aquí después de autorizar.
+          </p>
         </div>
         <div className="mt-8 text-left bg-spotify-green/10 p-6 rounded-2xl border-l-4 border-spotify-green">
           <p className="text-gray-800 font-semibold mb-4 text-base">
